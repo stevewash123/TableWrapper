@@ -4,8 +4,8 @@ import { TableWrapperDemoSimpleComponent } from './components/table-wrapper-demo
 import { TestComponent } from './components/test/test.component';
 
 export const routes: Routes = [
-  { path: '', component: PortfolioHomeComponent },
   { path: 'test', component: TestComponent },
   { path: 'table-wrapper', component: TableWrapperDemoSimpleComponent },
+  { path: '', component: PortfolioHomeComponent },
   { path: '**', redirectTo: '' }
 ];
