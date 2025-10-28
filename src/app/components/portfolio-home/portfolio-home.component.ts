@@ -40,7 +40,7 @@ export class PortfolioHomeComponent {
     {
       title: 'LessonTree',
       description: 'Full SaaS web application for educational content management with interactive lesson planning and progress tracking.',
-      technologies: ['Angular', 'C#', '.NET', 'Entity Framework', 'PostgreSQL'],
+      technologies: ['Angular', 'C#', '.NET', 'Entity Framework', 'PostgreSQL', 'Hangfire', 'Job Scheduling', 'SyncFusion Data Tree', 'Full Calendar', 'Rapid AI Development'],
       liveDemo: 'https://lessontree-ui.onrender.com',
       github: 'https://github.com/your-username/lessontree',
       status: 'Live on Render',
@@ -49,7 +49,7 @@ export class PortfolioHomeComponent {
     },
     {
       title: 'Lexical Parser',
-      description: 'Recipe search query lexical parser that analyzes and processes complex search terms for precise ingredient matching.',
+      description: 'Recipe search query lexical parser featuring complex inheritance patterns, method chaining, and advanced operator precedence handling.',
       technologies: ['Angular', 'C#', '.NET', 'Lexical Analysis'],
       liveDemo: 'https://recipefinder-ui.onrender.com',
       github: 'https://github.com/your-username/recipefinder',
@@ -60,7 +60,7 @@ export class PortfolioHomeComponent {
     {
       title: 'Angular Component Demo',
       description: 'Declarative table wrapper component demonstrating enterprise-grade data grid configuration.',
-      technologies: ['Angular', 'TypeScript', 'NgZorro', 'Declarative Configuration'],
+      technologies: ['Angular', 'TypeScript', 'NgZorro', 'PrimeNg', 'Declarative Configuration'],
       liveDemo: '/table-wrapper',
       github: 'https://github.com/your-username/tablewrapper',
       status: 'Live Demo',
@@ -70,10 +70,10 @@ export class PortfolioHomeComponent {
   ];
 
   techStack = [
-    { category: 'Frontend', technologies: ['Angular', 'TypeScript', 'NgZorro', 'Angular Material', 'RxJS'] },
-    { category: 'Backend', technologies: ['C#', '.NET Core', 'Entity Framework', 'SignalR', 'Web APIs'] },
-    { category: 'Database', technologies: ['PostgreSQL', 'SQLite', 'SQL Server'] },
-    { category: 'DevOps', technologies: ['Docker', 'Render.com', 'GitHub Actions', 'WSL'] },
+    { category: 'Frontend', technologies: ['Angular', 'TypeScript', 'NgZorro', 'PrimeNg', 'Angular Material', 'SyncFusion Data Tree', 'Full Calendar', 'RxJS'] },
+    { category: 'Backend', technologies: ['C#', '.NET Core', 'Entity Framework', 'SignalR', 'Hangfire', 'CQRS', 'Web APIs'] },
+    { category: 'Database', technologies: ['PostgreSQL', 'Oracle', 'NHibernate', 'SQLite', 'SQL Server'] },
+    { category: 'Cloud & Hosting', technologies: ['Render.com', 'GitHub Actions', 'WSL'] },
     { category: 'Tools', technologies: ['Git', 'Visual Studio Code', 'Postman', 'Chrome DevTools'] }
   ];
 
