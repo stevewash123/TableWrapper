@@ -13,7 +13,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes, { enableTracing: true }),
+    provideRouter(routes),
     provideAnimationsAsync(),
     provideNzI18n(en_US)
   ]
