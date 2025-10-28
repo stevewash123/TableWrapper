@@ -1,0 +1,88 @@
+// column-structure.model.ts - Fixed boolean property handling
+import { PageRequest } from '../../models/page.request';
+import { EsaSortMeta } from './models/esa-sort-meta.model';
+import { EsaFilterDictionary } from './models/esa-filter-meta.model';
+
+export class ColumnStructure {
+    field: string;
+    dbColumn: string; //optional, use if column name does not match resource name
+    header: string;
+    displayType: string = 'text';
+    canSort: Boolean = true;
+    canFilter: Boolean = true;
+    canEdit: Boolean = false;
+    matchMode: string = 'contains';
+    defaultSortOrder: number = -1;
+    sortAscending: Boolean = true;
+    dropdownFilterOptions: string;
+    dropdownEditOptions: string;
+    displayStyle: any = {};  // needs to be a style Object i.e. {'white-space':'pre-wrap'}
+    displayOption: string;
+    tooltip: string;
+    disableIf: string;
+    cellClass: string;
+    rowClass?: string | ((rowData: any) => string);
+    cellTooltip?: string | ((rowData: any) => string | null);
+    cellTooltipField?: string;
+    rowTooltip?: string | ((rowData: any) => string | null);
+    routePath: string; // For examContextLink: path after /exams/{examSeriesCode}/ like 'key-structure' or 'examinees/{examineeId}'
+    queryParams: string; // Query parameters like 'focusOn:{itemId},tab:{activeTab}'
+    
+
+    constructor(p: ColumnStructureParams){
+        this.field = p.field;
+        this.header = p.header;
+        if (p.dbColumn !== undefined) this.dbColumn = p.dbColumn;
+        if (p.displayType !== undefined) this.displayType = p.displayType;
+        if (p.canSort !== undefined) this.canSort = p.canSort;
+        if (p.canFilter !== undefined) this.canFilter = p.canFilter;
+        if (p.canEdit !== undefined) this.canEdit = p.canEdit;
+        if (p.matchMode !== undefined) this.matchMode = p.matchMode;
+        if (p.defaultSortOrder !== undefined) this.defaultSortOrder = p.defaultSortOrder;
+        if (p.sortAscending !== undefined) this.sortAscending = p.sortAscending;
+        if (p.dropdownFilterOptions !== undefined) this.dropdownFilterOptions = p.dropdownFilterOptions;
+        if (p.dropdownEditOptions !== undefined) this.dropdownEditOptions = p.dropdownEditOptions;
+        if (p.displayStyle !== undefined) this.displayStyle = p.displayStyle;
+        if (p.displayOption !== undefined) this.displayOption = p.displayOption;
+        if (p.tooltip !== undefined) this.tooltip = p.tooltip;
+        if (p.disableIf !== undefined) this.disableIf = p.disableIf;
+        if (p.cellClass !== undefined) this.cellClass = p.cellClass;
+        if (p.routePath !== undefined) this.routePath = p.routePath;
+        if (p.queryParams !== undefined) this.queryParams = p.queryParams;
+    }
+}
+
+export interface ColumnStructureParams
+{
+    field: string;
+    header: string;
+    dbColumn?: string;
+    displayType?: string;
+    canFilter?: Boolean;
+    matchMode?: string;
+    canSort?: Boolean;
+    defaultSortOrder?: number;
+    sortAscending?: Boolean;
+    canEdit?: Boolean;
+    dropdownFilterOptions?: string;
+    dropdownEditOptions?: string;
+    displayStyle?: any;
+    displayOption?: string;
+    tooltip?: string;
+    disableIf?: string;
+    cellClass?: string;
+    routePath?: string;
+    queryParams?: string;
+}
+
+
+export class ReportRequestEventData {
+    filters: EsaFilterDictionary;  
+    multiSortMeta: EsaSortMeta[];  
+    pageRequest: PageRequest;
+}
+
+export class ColumnChangedEvent<T> {
+    field: string;
+    rowData: T;
+}

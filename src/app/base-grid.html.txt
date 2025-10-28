@@ -1,0 +1,229 @@
+<div class='d-flex justify-content-end' style='margin-top: 6px'>
+    <a href="javascript:void(0)" (click)="onSortResetToDefault()" title="Default Sorting" style="font-size: 18px;">
+        <i class="fa fa-sort fa-6" aria-hidden="true"></i>
+        <i class="fa fa-undo"></i>
+    </a>
+</div>
+
+<nz-table 
+    #nzTable
+    [nzData]="data"
+    [nzFrontPagination]="false"
+    [nzTotal]="totalCount"
+    [nzPageSize]="pageSize"
+    [nzPageIndex]="pageIndex"
+    [nzPageSizeOptions]="pageSizes"
+    [nzShowSizeChanger]="true"
+    [nzShowQuickJumper]="true"
+    [nzLoading]="loading"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    nzBordered
+    nzSize="middle">
+    
+    <thead>
+        <!-- HEADER ROW 1: Column Headers with Sorting -->
+        <tr>
+            @for (col of gridColumns; track col.field) {
+                <th [nzColumnKey]="col.dbColumn || col.field"
+                    [nzSortFn]="col.canSort ? true : null"
+                    [nzSortOrder]="getSortOrder(col)"
+                    [nzWidth]="null">
+                    
+                    <span>{{col.header}}</span>
+                </th>
+            }
+        </tr>
+        
+        <!-- HEADER ROW 2: Filter Controls -->
+        <tr>
+            @for (col of gridColumns; track col.field) {
+                <th class="filter-row">
+                    
+                    <!-- Date Picker: For pipedDate displayType -->
+                    @if (col.displayType === 'pipedDate') {
+                        <nz-date-picker 
+                            nzPlaceHolder="Select date"
+                            nzAllowClear
+                            nzSize="small"
+                            style="width: 100%;"
+                            [(ngModel)]="dateFilterValues[col.field]"
+                            (ngModelChange)="applyDateFilter(col, $event)">
+                        </nz-date-picker>
+                    }
+                    
+                    <!-- Dropdown: For columns with dropdownFilterOptions -->
+                    @if (col.dropdownFilterOptions) {
+                        <nz-select 
+                            class="filter-dropdown"
+                            style="width: 100%;"
+                            nzPlaceHolder="All"
+                            nzAllowClear
+                            nzSize="small"
+                            [(ngModel)]="dropdownFilterValues[col.field]"
+                            (ngModelChange)="applyDropdownFilter(col, $event)">
+                            
+                            @for (option of getFilterOptions(col); track option.value) {
+                                <nz-option [nzValue]="option.value">
+                                    {{ option.label || option.value?.toString() || '' }}
+                                </nz-option>
+                            }
+                        </nz-select>
+                    }
+                    
+                    <!-- Number Input: For number displayType -->
+                    @if (col.displayType === 'number') {
+                        <input 
+                            nz-input
+                            class="tableInput"
+                            type="number" 
+                            nzSize="small"
+                            [placeholder]="'Filter ' + col.header"
+                            [value]="textFilterValues[col.field] || ''"
+                            (input)="onInputChange($event, col)"
+                            (keyup)="onInputKeyUp($event, col)"
+                            (change)="onInputStandardChange($event, col)"
+                            (blur)="onInputBlur($event, col)">
+                    }
+                    
+                    <!-- Text Input: Default for everything else -->
+                    @if (!col.dropdownFilterOptions && col.displayType !== 'number' && col.displayType !== 'pipedDate') {
+                        <input 
+                            nz-input
+                            class="tableInput"
+                            type="text" 
+                            nzSize="small"
+                            [placeholder]="'Filter ' + col.header"
+                            [value]="textFilterValues[col.field] || ''"
+                            (input)="onInputChange($event, col)"
+                            (keyup)="onInputKeyUp($event, col)"
+                            (change)="onInputStandardChange($event, col)"
+                            (blur)="onInputBlur($event, col)">
+                    }
+                </th>
+            }
+        </tr>
+    </thead>
+    
+    <tbody>
+        @for (rowData of data; track $index; let rowIndex = $index) {
+            <tr [style.cursor]="allowRowSelection ? 'pointer' : 'default'"
+                [class.ant-table-row-selected]="allowRowSelection && selectedItem === rowData"
+                [ngClass]="rowData | rowClass:gridColumns"
+                [nz-tooltip]="rowData | rowTooltip:gridColumns"
+                (click)="allowRowSelection ? onRowClick(rowData) : null">
+                
+                @for (col of gridColumns; track col.field) {
+                    <td [ngClass]="col.cellClass">
+                        
+                        @switch (col.displayType) {
+                            <!-- Exam Context Link -->
+                            @case ('examContextLink') {
+                                @let routeData = rowData | routeData:col:examSeriesCode;
+                                @if (routeData) {
+                                    <div [nz-tooltip]="rowData | cellTooltip:col" nzTooltipPlacement="top">
+                                        <a class="tableLinkClass"
+                                            [routerLink]="routeData.routerLink"
+                                            [queryParams]="routeData.queryParams">
+                                            {{ routeData.displayValue }}
+                                        </a>
+                                    </div>
+                                }
+                            }
+                            
+                            <!-- Examinee Link -->
+                            @case ('examineeLink') {
+                                @let routeData = rowData | routeData:col:examSeriesCode;
+                                @if (routeData) {
+                                    <div [nz-tooltip]="rowData | cellTooltip:col" nzTooltipPlacement="top">
+                                        <a class="tableLinkClass"
+                                            [routerLink]="routeData.routerLink">
+                                            {{ routeData.displayValue }}
+                                        </a>
+                                    </div>
+                                }
+                            }
+                            
+                            <!-- Date display -->
+                            @case ('pipedDate') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData[col.field] | date:col.displayOption }}
+                                </div>
+                            }
+                            
+                            <!-- Number display -->
+                            @case ('number') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData[col.field] | number }}
+                                </div>
+                            }
+                            
+                            <!-- Checkbox display -->
+                            @case ('checkbox') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    <input type="checkbox" [disabled]="true" [checked]="rowData[col.field]">
+                                </div>
+                            }
+                            
+                            <!-- Center with Tooltip -->
+                            @case ('centerWithTooltip') {
+                                <div [nz-tooltip]="rowData['testCenterCity'] + ', ' + rowData['testCenterCountry']">
+                                    {{ rowData[col.field] }}
+                                </div>
+                            }
+                            
+                            <!-- Incident Column -->
+                            @case ('incidentColumn') {
+                                <esa-incident-column
+                                    [incidentIds]="rowData['incidentid']"
+                                    [comments]="rowData['comments']">
+                                </esa-incident-column>
+                            }
+                            
+                            <!-- Dropdown -->
+                            @case ('dropdown') {
+                                <!-- Display only, no editing functionality -->
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData[col.field] }}
+                                </div>
+                            }
+                            
+                            <!-- Default text display -->
+                            @default {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData[col.field] }}
+                                </div>
+                            }
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</nz-table>
+
+<!-- Summary section -->
+<div class="row" style="margin-top: 16px;">
+    <div class="col text-right">
+        <b>{{ displayTotalCountText }}</b>
+    </div>
+    <div class="col text-right">
+        @if (!isExportHidden && totalCount === 0) {
+            <button 
+                nz-button 
+                nzType="primary"
+                disabled>
+                Export
+            </button>
+        }
+        
+        @if (!isExportHidden && totalCount > 0) {
+            <a [href]="ssrsLink" 
+               (click)="onClickExport()" 
+               download>
+                <button nz-button nzType="primary">
+                    Export
+                </button>
+            </a>
+        }
+    </div>
+</div>

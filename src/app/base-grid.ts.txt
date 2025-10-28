@@ -1,0 +1,402 @@
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { EsaSortMeta } from './models/esa-sort-meta.model';
+import { EsaSelectItem } from './models/esa-select-item.model';
+import { NzTableComponent, NzTableQueryParams, NzTableModule } from 'ng-zorro-antd/table';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { PageRequest } from '../../models/page.request';
+import { IPagedGridRow } from '../../models/paged-grid-row.interface';
+import { ColumnStructure, ReportRequestEventData } from './column-structure.model';
+import { EsaFilterDictionary, EsaFilterMeta } from './models/esa-filter-meta.model';
+import { SharedPipesModule } from 'src/app/pipes/shared-pipes.module';
+import { RouterModule } from '@angular/router';
+import { IncidentColumnComponent } from 'src/app/shared/incident-column/incident-column.component';
+import { RouteDataPipe } from '../../pipes/route-data.pipe';
+import { CellTooltipPipe } from 'src/app/pipes/cell-tooltip.pipe';
+import { RowClassPipe } from 'src/app/pipes/row-class.pipe';
+import { RowTooltipPipe } from 'src/app/pipes/row-tooltip.pipe';
+
+@Component({
+    selector: 'esa-paged-grid',
+    templateUrl: './esa-paged-grid.component.html',
+    styleUrls: ['./esa-paged-grid.component.less'],
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        NzTableModule,
+        NzSelectModule,
+        NzInputModule,
+        NzDatePickerModule,
+        NzCheckboxModule,
+        NzButtonModule,
+        NzToolTipModule,
+        SharedPipesModule,
+        IncidentColumnComponent,
+        RouteDataPipe,
+        RowClassPipe,
+        RowTooltipPipe,
+        CellTooltipPipe
+     ]
+})
+export class EsaPagedGridComponent<T extends IPagedGridRow> implements OnInit, OnChanges {
+    @Input() gridColumns: ColumnStructure[] = [];
+    @Input() data: T[] = [];  // Simple input, no signal needed
+    @Input() totalCount: number = 0;
+    @Input() examSeriesCode: string = '';  // Simple input, no signal needed
+    @Input() isExamLocked: boolean = false;
+    @Input() isExportHidden: boolean = false;
+
+    @Input() optionLists: Map<string, Array<EsaSelectItem>> = new Map<string, Array<EsaSelectItem>>();
+    
+    @Input() pageLinks: number = 3;
+    @Input() pageSizes: number[] = [50, 100, 250];
+    @Input() rowsShown: number = 50;
+    @Input() loading: boolean = false; 
+
+    @Input() ssrsLink: string = '';
+    @Input() exportFilename: string = '';
+    @Input() allowRowSelection: boolean = false;
+
+    @Output() onDataRequested: EventEmitter<PageRequest> = new EventEmitter<PageRequest>();
+    @Output() onReportRequested: EventEmitter<ReportRequestEventData> = new EventEmitter<ReportRequestEventData>();
+    @Output() onRowSelect: EventEmitter<T> = new EventEmitter<T>();
+
+    // NgZorro specific properties
+    public pageSize: number = 50;
+    public pageIndex: number = 1;
+    public displayTotalCountText: string = '';
+    
+    // Filter values
+    public textFilterValues: { [key: string]: string } = {};
+    public dropdownFilterValues: { [key: string]: any } = {};
+    public dateFilterValues: { [key: string]: Date } = {};   
+    
+    // Debouncing for filters
+    private filterTimeout: any;
+    private lastFilterRequest: string = '';
+    
+    // Sort tracking
+    public currentSort: NzTableQueryParams | null = null;
+    
+    public currentEsaFilters: EsaFilterDictionary = {};
+    private _filters: EsaFilterDictionary = {};
+
+    public selectedItem: T | null = null;   
+    private _pageRequest: PageRequest = new PageRequest(1, 50);
+
+    constructor() { }
+
+    ngOnInit(): void {
+        this.pageSize = this.rowsShown;
+        this._pageRequest.pageSize = this.rowsShown;
+        
+        // Set initial sorts
+        const initialSorts = this.gridColumns
+            .filter((c: ColumnStructure) => c.defaultSortOrder > 0)
+            .sort((a, b) => a.defaultSortOrder - b.defaultSortOrder)
+            .map((c: ColumnStructure) => ({ 
+                field: c.dbColumn || c.field, 
+                order: c.sortAscending ? 1 : -1 
+            } as EsaSortMeta));
+        
+        this._pageRequest.sorts = initialSorts;
+        this.updateDisplayTotalCountText();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['data'] && this.allowRowSelection) {
+            if (this.data && this.data.length > 0) {
+                this.selectedItem = this.data[0];
+                this.onRowSelect.emit(this.data[0]);
+            }
+        }
+        if (changes['totalCount']) {
+            this.updateDisplayTotalCountText();
+        }
+    }
+    
+    private updateDisplayTotalCountText(): void {
+        this.displayTotalCountText = this.totalCount > 0 ? this.totalCount + ' records' : 'No records';
+    }
+
+    onQueryParamsChange(params: NzTableQueryParams): void {
+        const { pageSize, pageIndex, sort, filter } = params;
+        
+        this.currentSort = params;
+        this._pageRequest.pageIndex = pageIndex;
+        this._pageRequest.pageSize = pageSize;
+        
+        // Convert NgZorro sort to our EsaSortMeta format
+        const sorts: EsaSortMeta[] = [];
+        sort.forEach(s => {
+            if (s.value) {
+                sorts.push({
+                    field: s.key,
+                    order: s.value === 'ascend' ? 1 : -1
+                } as EsaSortMeta);
+            }
+        });
+        this._pageRequest.sorts = sorts;
+        
+        // Convert filters to array format expected by PageRequest
+        const filterArray: any[] = [];
+        Object.keys(this._filters).forEach(key => {
+            const filterValue = this._filters[key];
+            
+            if (Array.isArray(filterValue)) {
+                filterValue.forEach(f => {
+                    filterArray.push({
+                        fieldName: f.fieldName,
+                        value: f.value,
+                        matchMode: f.matchMode
+                    });
+                });
+            } else {
+                filterArray.push({
+                    fieldName: filterValue.fieldName,
+                    value: filterValue.value,
+                    matchMode: filterValue.matchMode
+                });
+            }
+        });
+        this._pageRequest.filters = filterArray;
+        this.onDataRequested.emit(this._pageRequest);
+    }
+
+    // Row selection
+    onRowClick(rowData: T): void {
+        if (this.allowRowSelection) {
+            this.selectedItem = rowData;
+            this.onRowSelect.emit(rowData);
+        }
+    }
+
+    // Input change handler
+    onInputChange(event: Event, column: ColumnStructure): void {
+        const target = event.target as HTMLInputElement;
+        const value = target.value;
+                
+        // Update the model value immediately
+        this.textFilterValues[column.field] = value;
+        
+        // Apply the filter with debouncing for input events
+        this.applyTextFilterWithDebounce(column, 300);
+    }
+
+    onInputKeyUp(event: KeyboardEvent, column: ColumnStructure): void {
+        if (event.key === 'Enter') {
+            // Clear any pending debounced request and apply immediately
+            if (this.filterTimeout) {
+                clearTimeout(this.filterTimeout);
+            }
+            this.applyTextFilter(column);
+        }
+    }
+
+    onInputStandardChange(event: Event, column: ColumnStructure): void {
+        const target = event.target as HTMLInputElement;
+        this.textFilterValues[column.field] = target.value;
+        
+        // Apply immediately for change event, but only if no input event is pending
+        if (!this.filterTimeout) {
+            this.applyTextFilter(column);
+        }
+    }
+
+    onInputBlur(event: Event, column: ColumnStructure): void {
+        const target = event.target as HTMLInputElement;
+        this.textFilterValues[column.field] = target.value;
+        
+        // Clear any pending debounced request and apply immediately
+        if (this.filterTimeout) {
+            clearTimeout(this.filterTimeout);
+        }
+        this.applyTextFilter(column);
+    }
+
+    // Debounced filter application
+    private applyTextFilterWithDebounce(column: ColumnStructure, delay: number): void {
+        if (this.filterTimeout) {
+            clearTimeout(this.filterTimeout);
+        }
+        
+        this.filterTimeout = setTimeout(() => {
+            this.applyTextFilter(column);
+            this.filterTimeout = null;
+        }, delay);
+    }
+
+    // Text filter methods
+    applyTextFilter(column: ColumnStructure): void {
+        const value = this.textFilterValues[column.field];
+                
+        if (value && value.trim()) {
+            this._filters[column.field] = {
+                fieldName: column.field,
+                value: value.trim(),
+                matchMode: column.matchMode || 'contains'
+            } as EsaFilterMeta;
+        } else {
+            delete this._filters[column.field];
+        }
+        
+        this.currentEsaFilters = { ...this._filters };
+        this.triggerDataRequest();
+    }
+    
+    // Dropdown filter methods
+    applyDropdownFilter(column: ColumnStructure, value: any): void {
+        if (value !== null && value !== undefined && value !== '') {
+            this._filters[column.field] = {
+                fieldName: column.field, 
+                value: value,
+                matchMode: column.matchMode || 'equals'
+            } as EsaFilterMeta;
+        } else {
+            delete this._filters[column.field];
+        }
+        
+        this.currentEsaFilters = { ...this._filters };
+        this.triggerDataRequest();
+    }
+
+    // Date filter methods
+    public applyDateFilter(column: ColumnStructure, date: Date | null): void {
+        if (date) {
+            const format = column.displayOption || 'dd-MMM-yyyy';
+            const formattedDate = this.formatDateForFilter(date, format);
+            
+            this._filters[column.field] = {
+                fieldName: column.field,  
+                value: formattedDate,
+                matchMode: column.matchMode || 'contains'
+            } as EsaFilterMeta;
+        } else {
+            delete this._filters[column.field];
+        }
+        
+        this.currentEsaFilters = { ...this._filters };
+        this.triggerDataRequest();
+    }
+
+    private formatDateForFilter(date: Date, format: string): string {
+        // Simple date formatting - you can enhance this based on your needs
+        const day = date.getDate().toString().padStart(2, '0');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+        
+        // Return in dd-MMM-yyyy format (adjust if needed)
+        return `${day}-${month}-${year}`;
+    }
+    
+    private triggerDataRequest(): void {
+        const filterKey = JSON.stringify(this._filters) + '_' + this._pageRequest.pageIndex + '_' + this._pageRequest.pageSize;
+        
+        if (filterKey === this.lastFilterRequest && this.loading) {
+            return;
+        }
+        
+        this.lastFilterRequest = filterKey;
+        
+        this.pageIndex = 1;
+        this._pageRequest.pageIndex = 1;
+        
+        const filterArray: any[] = [];
+        Object.keys(this._filters).forEach(key => {
+            const filterValue = this._filters[key];
+            
+            if (Array.isArray(filterValue)) {
+                filterValue.forEach(filter => {
+                    filterArray.push({
+                        fieldName: filter.fieldName,
+                        value: filter.value,
+                        matchMode: filter.matchMode
+                    });
+                });
+            } else {
+                filterArray.push({
+                    fieldName: filterValue.fieldName,
+                    value: filterValue.value,
+                    matchMode: filterValue.matchMode
+                });
+            }
+        });
+        this._pageRequest.filters = filterArray;
+                
+        this.onDataRequested.emit(this._pageRequest);
+    }
+
+    // Sort methods
+    getSortOrder(column: ColumnStructure): string | null {
+        if (!this.currentSort) {
+            // Check for default sort
+            if (column.defaultSortOrder > 0) {
+                return column.sortAscending ? 'ascend' : 'descend';
+            }
+            return null;
+        }
+        
+        const sortItem = this.currentSort.sort.find(s => s.key === (column.dbColumn || column.field));
+        return sortItem ? sortItem.value : null;
+    }
+
+    onSortResetToDefault(): void {
+        const defaultSorts = this.gridColumns
+            .filter((c: ColumnStructure) => c.defaultSortOrder > 0)
+            .sort((a, b) => a.defaultSortOrder - b.defaultSortOrder)
+            .map((c: ColumnStructure) => ({ 
+                field: c.dbColumn || c.field, 
+                order: c.sortAscending ? 1 : -1 
+            } as EsaSortMeta));
+    
+        this._pageRequest.sorts = defaultSorts;
+        this._pageRequest.pageIndex = 1;
+        this.pageIndex = 1;
+        
+        // Clear all filters
+        this._filters = {};
+        this.textFilterValues = {};
+        this.dropdownFilterValues = {};
+        this.dateFilterValues = {};
+        this.currentEsaFilters = {};        
+        this.currentSort = null;
+        
+        // Emit the data request to reload with defaults
+        this.onDataRequested.emit(this._pageRequest);
+    }
+
+    onClickExport(): void {
+        const eventData = new ReportRequestEventData();
+        eventData.filters = this._filters;
+        eventData.pageRequest = this._pageRequest;
+        eventData.multiSortMeta = this._pageRequest.sorts;
+        this.onReportRequested.emit(eventData);
+    }
+
+    // Helper methods for templates
+    getFilterOptions(column: ColumnStructure): EsaSelectItem[] {
+        if (!column.dropdownFilterOptions) {
+            return [];
+        }
+
+        const o = this.optionLists.get(column.dropdownFilterOptions);
+        return  o || [];
+    }
+
+    getDropdownEditOptions(column: ColumnStructure): EsaSelectItem[] {
+        if (!column.dropdownEditOptions) {
+            return [];
+        }
+        return this.optionLists.get(column.dropdownEditOptions) || [];
+    }
+}

@@ -1,0 +1,77 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Import NgZorro default styles */
+@import 'ng-zorro-antd/ng-zorro-antd.css';
+
+/* Global table styling to ensure consistency */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Critical table styles - global fallback */
+.ant-table {
+  border: 1px solid #8c8c8c !important;
+}
+
+.ant-table-thead > tr > th {
+  font-weight: bold !important;
+  background-color: #E8E8E8 !important;
+  color: #000 !important;
+  border: 1px solid #8c8c8c !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+.ant-table-thead > tr > th.ant-table-column-sort {
+  background-color: rgb(0, 122, 217) !important;
+  color: #ffffff !important;
+  border: 1px solid #8c8c8c !important;
+}
+
+.ant-table-tbody > tr > td {
+  border: 1px solid #8c8c8c !important;
+}
+
+.ant-table-tbody > tr:nth-child(even) {
+  background-color: #DEE9F0 !important;
+}
+
+.ant-table-tbody > tr:nth-child(odd) {
+  background-color: #ffffff !important;
+}
+
+/* Fix sort icon alignment */
+.ant-table-thead .ant-table-column-sorter {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-left: 4px !important;
+}
+
+.ant-table-thead .ant-table-column-sorter .anticon {
+  color: #262626 !important;
+  font-size: 12px !important;
+}
+
+.ant-table-thead .ant-table-column-sorter .anticon.active {
+  color: #ffffff !important;
+}
+
+/* Fix header layout */
+.ant-table-thead > tr > th .ant-table-header-column {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Input number spin button removal */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type=number] {
+  -moz-appearance: textfield !important;
+}

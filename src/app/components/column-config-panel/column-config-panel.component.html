@@ -1,0 +1,314 @@
+<nz-card nzTitle="Column Configuration" class="config-panel">
+
+  <nz-divider nzText="Column Definitions" nzOrientation="left"></nz-divider>
+
+  <div class="column-list">
+    @for (column of columns; track column.field) {
+      <div class="column-item" (click)="onColumnClick(column)">
+        <div class="column-header">
+          <span class="field-name">{{ column.field }}</span>
+          <nz-tag [nzColor]="getDisplayTypeColor(column.displayType)">
+            {{ column.displayType }}
+          </nz-tag>
+        </div>
+
+        <!-- Edit Button -->
+        <button
+          class="edit-button"
+          nz-button
+          nzType="text"
+          nzSize="small"
+          nz-tooltip
+          nzTooltipTitle="Click to edit column configuration"
+          (click)="onColumnClick(column); $event.stopPropagation()">
+          ✏️
+        </button>
+
+        <div class="column-details">
+          <div class="detail-row">
+            <strong>Header:</strong> {{ column.header }}
+          </div>
+
+          @if (column.width) {
+            <div class="detail-row">
+              <strong>Width:</strong> {{ column.width }}
+            </div>
+          }
+
+          @if (column.matchMode) {
+            <div class="detail-row">
+              <strong>Filter Mode:</strong> {{ column.matchMode }}
+            </div>
+          }
+
+          @if (column.dropdownFilterOptions) {
+            <div class="detail-row">
+              <strong>Dropdown Options:</strong> {{ column.dropdownFilterOptions }}
+            </div>
+          }
+
+          @if (column.routePath) {
+            <div class="detail-row">
+              <strong>Route:</strong> <code>{{ column.routePath }}</code>
+            </div>
+          }
+
+          @if (column.queryParamFields && column.queryParamFields.length > 0) {
+            <div class="detail-row">
+              <strong>Query Params:</strong> {{ column.queryParamFields.join(', ') }}
+            </div>
+          }
+
+          @if (column.displayOption) {
+            <div class="detail-row">
+              <strong>Format:</strong> {{ column.displayOption }}
+            </div>
+          }
+
+          <div class="feature-tags">
+            @for (feature of getFeatureList(column); track feature) {
+              <nz-tag nzSize="small">{{ feature }}</nz-tag>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <nz-divider></nz-divider>
+
+  <div class="summary">
+    <div class="summary-item">
+      <strong>{{ columns.length }}</strong> Columns Configured
+    </div>
+    <div class="summary-item">
+      <strong>{{ sortableCount }}</strong> Sortable
+    </div>
+    <div class="summary-item">
+      <strong>{{ filterableCount }}</strong> Filterable
+    </div>
+  </div>
+</nz-card>
+
+<!-- Editable Column Configuration Modal -->
+<nz-modal
+  [(nzVisible)]="isEditModalVisible"
+  nzTitle="Edit Column Configuration"
+  [nzWidth]="800"
+  (nzOnCancel)="handleEditCancel()"
+  (nzOnOk)="handleEditOk()"
+  nzOkText="Save Changes"
+  nzCancelText="Cancel">
+
+  <ng-container *nzModalContent>
+    <div *ngIf="editingColumn" class="column-edit-content">
+
+      <nz-tabset nzType="card" nzSize="small">
+
+        <!-- Basic Configuration Tab -->
+        <nz-tab nzTitle="📋 Configuration">
+          <form nz-form nzLayout="vertical">
+
+            <!-- Field Name (Read-only) -->
+            <nz-form-item>
+              <nz-form-label>Field Name</nz-form-label>
+              <nz-form-control>
+                <input nz-input [value]="editingColumn.field" disabled />
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Display Header -->
+            <nz-form-item>
+              <nz-form-label>Display Header</nz-form-label>
+              <nz-form-control>
+                <input nz-input [(ngModel)]="editingColumn.header" name="header" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Display Type -->
+            <nz-form-item>
+              <nz-form-label>Display Type</nz-form-label>
+              <nz-form-control>
+                <nz-select [(ngModel)]="editingColumn.displayType" name="displayType" nzPlaceHolder="Select display type">
+                  <nz-option *ngFor="let option of displayTypeOptions" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Width -->
+            <nz-form-item>
+              <nz-form-label>Width</nz-form-label>
+              <nz-form-control>
+                <input nz-input [(ngModel)]="editingColumn.width" name="width" placeholder="e.g., 120px, auto" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Sortable -->
+            <nz-form-item>
+              <nz-form-control>
+                <label nz-checkbox [(ngModel)]="editingColumn.canSort" name="canSort">
+                  Sortable
+                </label>
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Filter Mode -->
+            <nz-form-item>
+              <nz-form-label>Filter Mode</nz-form-label>
+              <nz-form-control>
+                <nz-select [(ngModel)]="editingColumn.matchMode" name="matchMode" nzPlaceHolder="Select filter mode" nzAllowClear>
+                  <nz-option *ngFor="let option of filterModeOptions" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Route Path (for link type) -->
+            <nz-form-item *ngIf="editingColumn.displayType === 'link'">
+              <nz-form-label>Route Path</nz-form-label>
+              <nz-form-control>
+                <input nz-input [(ngModel)]="editingColumn.routePath" name="routePath" placeholder="e.g., /user/{id}" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Date Format (for date type) -->
+            <nz-form-item *ngIf="editingColumn.displayType === 'date'">
+              <nz-form-label>Date Format</nz-form-label>
+              <nz-form-control>
+                <nz-select [(ngModel)]="editingColumn.displayOption" name="displayOption" nzPlaceHolder="Select date format">
+                  <nz-option *ngFor="let option of dateFormatOptions" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+          </form>
+        </nz-tab>
+
+        <!-- Cell Styling Tab -->
+        <nz-tab nzTitle="🎨 Cell Styling">
+
+          <!-- Preset Styles Section -->
+          <div class="styling-section">
+            <h4>Quick Preset Styles</h4>
+            <div class="preset-styles-grid">
+              <div *ngFor="let preset of presetStyles"
+                   class="preset-style-card"
+                   [class.selected]="editingColumn.cellStyle === preset.value"
+                   (click)="applyPresetStyle(preset.value)"
+                   nz-tooltip
+                   [nzTooltipTitle]="'Click to apply: ' + preset.label">
+                <div class="preset-label">{{ preset.label }}</div>
+                <div class="preset-preview" [style]="preset.value">{{ preset.preview }}</div>
+              </div>
+            </div>
+
+            <nz-space nzDirection="horizontal" class="style-actions">
+              <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="clearAllStyles()">
+                🗑️
+                Clear All Styles
+              </button>
+            </nz-space>
+          </div>
+
+          <!-- Individual Style Controls -->
+          <form nz-form nzLayout="vertical" class="styling-form">
+
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="12">
+                <nz-form-item>
+                  <nz-form-label>Text Alignment</nz-form-label>
+                  <nz-form-control>
+                    <nz-select [(ngModel)]="editingColumn.textAlign" name="textAlign" nzPlaceHolder="Select alignment" nzAllowClear>
+                      <nz-option *ngFor="let option of textAlignOptions" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-form-item>
+                  <nz-form-label>Font Weight</nz-form-label>
+                  <nz-form-control>
+                    <nz-select [(ngModel)]="editingColumn.fontWeight" name="fontWeight" nzPlaceHolder="Select weight" nzAllowClear>
+                      <nz-option *ngFor="let option of fontWeightOptions" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Text Color</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input [(ngModel)]="editingColumn.textColor" name="textColor" type="color" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Background Color</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input [(ngModel)]="editingColumn.backgroundColor" name="backgroundColor" type="color" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Font Size</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input [(ngModel)]="editingColumn.fontSize" name="fontSize" placeholder="e.g., 14px, 1.2em" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+
+            <!-- Free-form CSS Entry -->
+            <nz-form-item>
+              <nz-form-label>
+                Custom CSS Styles
+                <span nz-tooltip nzTooltipTitle="Enter any valid CSS properties. This will override individual style settings above.">
+                  ❓
+                </span>
+              </nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  [(ngModel)]="editingColumn.cellStyle"
+                  name="cellStyle"
+                  [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                  placeholder="e.g., color: red; font-weight: bold; background-color: #f0f0f0;">
+                </textarea>
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Live Style Preview -->
+            <nz-form-item>
+              <nz-form-label>Live Preview</nz-form-label>
+              <nz-form-control>
+                <div class="style-preview" [style]="getComputedCellStyle()">
+                  Sample {{ editingColumn.displayType }} content preview
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+
+          </form>
+
+        </nz-tab>
+
+        <!-- JSON Preview Tab -->
+        <nz-tab nzTitle="📄 JSON Preview">
+          <h3>Live Configuration JSON</h3>
+          <pre class="json-preview">{{ editingColumn | json }}</pre>
+
+          <div class="notice">
+            <p><strong>📝 Note:</strong> Changes will be applied immediately to demonstrate the column configuration system.</p>
+            <p><strong>🚀 Enterprise Usage:</strong> In production, these changes would be persisted to a database or configuration API.</p>
+          </div>
+        </nz-tab>
+
+      </nz-tabset>
+
+    </div>
+  </ng-container>
+
+</nz-modal>

@@ -1,0 +1,334 @@
+<style>
+  :host {
+    --primary-color: #1890ff;
+    --secondary-color: #52c41a;
+    --danger-color: #ff4d4f;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #f0f0f0;
+    --gray-300: #d9d9d9;
+    --gray-400: #bfbfbf;
+    --gray-500: #8c8c8c;
+    --gray-600: #595959;
+    --gray-700: #434343;
+    --gray-800: #262626;
+    --gray-900: #1f1f1f;
+
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  .portfolio-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 100px 24px 70px;
+  }
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin: 0 0 24px;
+    background: linear-gradient(45deg, #ffffff, #e6f7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
+    margin: 0 0 40px;
+    opacity: 0.9;
+    line-height: 1.8;
+  }
+
+  .hero-cta {
+    margin-top: 32px;
+  }
+
+  .hero-cta .ant-btn {
+    height: 48px;
+    padding: 0 32px;
+    font-size: 16px;
+    border-radius: 24px;
+    margin: 0 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .content-section {
+    background: white;
+    padding: 80px 24px;
+  }
+
+  .section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 48px;
+    color: var(--gray-900);
+  }
+
+  .projects-grid {
+    margin-bottom: 80px;
+  }
+
+  .project-card {
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none;
+  }
+
+  .project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .project-image {
+    height: 180px;
+    background: linear-gradient(45deg, #f0f2f5, #e6f7ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: var(--primary-color);
+  }
+
+  .project-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--gray-900);
+  }
+
+  .project-description {
+    color: var(--gray-600);
+    margin: 0 0 16px;
+    line-height: 1.6;
+  }
+
+  .project-tech {
+    margin: 16px 0;
+  }
+
+  .project-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .project-actions .ant-btn {
+    flex: 1;
+    border-radius: 6px;
+  }
+
+  .status-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .tech-section {
+    background: var(--gray-50);
+    padding: 60px 24px;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .tech-card {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .tech-category {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 16px;
+    color: var(--primary-color);
+  }
+
+  .tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .footer-section {
+    background: var(--gray-900);
+    color: white;
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .footer-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+
+    .hero-cta .ant-btn {
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .section-title {
+      font-size: 2rem;
+    }
+
+    .project-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<div class="portfolio-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Steve Wash</h1>
+      <h2 style="font-size: 1.8rem; font-weight: 400; margin: 0 0 24px; opacity: 0.9;">Full-Stack Developer Portfolio</h2>
+      <p class="hero-subtitle">
+        Crafting modern web applications with Angular, .NET, and enterprise-grade architecture.
+        Passionate about clean code, scalable solutions, and exceptional user experiences.
+      </p>
+      <div class="hero-cta">
+        <button nz-button nzType="primary" nzSize="large" (click)="scrollToProjects()">
+          🚀
+          View Projects
+        </button>
+        <button nz-button nzSize="large" (click)="scrollToContact()">
+          📧
+          Get In Touch
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section -->
+  <section class="content-section" id="projects">
+    <div class="section-container">
+      <h2 class="section-title">Featured Projects</h2>
+
+      <div nz-row [nzGutter]="[24, 24]" class="projects-grid">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6" *ngFor="let project of projects">
+          <nz-card class="project-card" [nzCover]="coverTemplate" [nzActions]="[actionLive, actionGithub]">
+            <ng-template #coverTemplate>
+              <div class="project-image">
+                {{ project.title === 'LongRunningJobs' ? '⏳' :
+                   project.title === 'LessonTree' ? '📚' :
+                   project.title === 'Lexical Parser' ? '🔍' : '🗂️' }}
+              </div>
+            </ng-template>
+
+            <ng-template #actionLive>
+              <a [href]="project.liveDemo" [target]="project.liveDemo.startsWith('http') ? '_blank' : '_self'">
+                👁️
+                Live Demo
+              </a>
+            </ng-template>
+
+            <ng-template #actionGithub>
+              <a [href]="project.github" target="_blank">
+                💻
+                GitHub
+              </a>
+            </ng-template>
+
+            <nz-tag [nzColor]="project.status.includes('Render') ? 'orange' : project.status === 'Live Demo' ? 'green' : 'blue'"
+                    class="status-tag"
+                    nz-tooltip
+                    [nzTooltipTitle]="project.statusNote">
+              {{ project.status }}
+            </nz-tag>
+
+            <nz-card-meta
+              [nzTitle]="project.title"
+              [nzDescription]="project.description">
+            </nz-card-meta>
+
+            <div class="project-tech">
+              <nz-tag *ngFor="let tech of project.technologies" nzColor="blue" nzSize="small">
+                {{ tech }}
+              </nz-tag>
+            </div>
+          </nz-card>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack Section -->
+  <section class="tech-section">
+    <div class="section-container">
+      <h2 class="section-title">Technology Stack</h2>
+
+      <div class="tech-grid">
+        <div class="tech-card" *ngFor="let category of techStack">
+          <h3 class="tech-category">{{ category.category }}</h3>
+          <div class="tech-list">
+            <nz-tag *ngFor="let tech of category.technologies" nzColor="processing" nzSize="small">
+              {{ tech }}
+            </nz-tag>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact/Footer Section -->
+  <section class="footer-section" id="contact">
+    <div class="footer-content">
+      <h2 style="color: white;">Let's Build Something Amazing Together</h2>
+      <p>I'm always interested in discussing new opportunities and innovative projects.</p>
+
+      <div style="margin-top: 24px;">
+        <a href="mailto:stevewash123@gmail.com">
+          <button nz-button nzType="primary" nzSize="large" style="margin: 0 8px;">
+            📧
+            stevewash123@gmail.com
+          </button>
+        </a>
+        <!-- LinkedIn hidden for now -->
+      </div>
+    </div>
+  </section>
+</div>

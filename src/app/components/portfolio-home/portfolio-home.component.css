@@ -1,0 +1,33 @@
+/* Additional component-specific styles */
+/* Most styles are inline in the HTML for this component */
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+.project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-card .ant-card-body {
+  position: relative;
+}
+
+.ant-card-actions > li {
+  margin: 0;
+}
+
+.ant-card-actions > li > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #1890ff;
+  transition: all 0.3s;
+}
+
+.ant-card-actions > li > span:hover {
+  color: #40a9ff;
+}

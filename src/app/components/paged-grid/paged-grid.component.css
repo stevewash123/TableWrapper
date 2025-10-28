@@ -1,0 +1,294 @@
+.filter-row {
+  padding: 8px !important;
+}
+
+.table-input {
+  width: 100%;
+}
+
+.filter-dropdown {
+  width: 100%;
+}
+
+.table-link {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  color: #40a9ff;
+  text-decoration: underline;
+}
+
+.grid-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding: 0 8px;
+}
+
+.record-count {
+  color: #595959;
+}
+
+/* Selected row styling */
+.ant-table-row-selected {
+  background-color: #e6f7ff !important;
+}
+
+.ant-table-row-selected:hover {
+  background-color: #bae7ff !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+}
+
+/* ===== TABLEWRAPPER COMPREHENSIVE STYLING ===== */
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Legacy compatibility */
+.tableInput {
+  width: 100%;
+}
+
+.yellowRow {
+  background-color: #FFFFE0 !important;
+}
+
+.dropDownFonts {
+  font-size: 9px;
+}
+
+/* Missing Responses specific styles moved from component */
+.tableLinkClass {
+  color: #007ad9;
+  text-decoration: none;
+}
+
+.tableLinkClass:hover {
+  text-decoration: underline;
+}
+
+/* Filter dropdown styling for smaller columns */
+.filter-dropdown {
+  font-size: 9px;
+  line-height: 16px;
+}
+
+/* Summary section styling */
+.summary-section {
+  margin-top: 16px;
+}
+
+.summary-section .col {
+  text-align: right;
+}
+
+.summary-section .col:first-child {
+  flex: 0 0 50%;
+  max-width: 100%;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* NgZorro Table Overrides using ::ng-deep */
+:host ::ng-deep {
+  /* Force CSS loading - ensure specificity */
+  /* Basic table border */
+  .ant-table {
+    border: 1px solid #8c8c8c;
+  }
+
+  /* Header styling - bold text, darker grey background by default */
+  .ant-table-thead > tr > th {
+    font-weight: bold;
+    background-color: #E8E8E8;
+    color: #000;
+    border: 1px solid #8c8c8c;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  /* Sorted column styling - specific blue background with white text */
+  .ant-table-thead > tr > th.ant-table-column-sort {
+    background-color: rgb(0, 122, 217) !important;
+    color: #ffffff !important;
+    border: 1px solid #8c8c8c !important;
+  }
+
+  /* Filter row styling */
+  .filter-row {
+    background-color: #E8E8E8;
+    border: 1px solid #8c8c8c;
+  }
+
+  /* Border below the filter row (2nd header row) */
+  .ant-table-thead > tr:last-child > th {
+    border-bottom: 1px solid #8c8c8c !important;
+  }
+
+  /* Table body cell borders */
+  .ant-table-tbody > tr > td {
+    border: 1px solid #8c8c8c;
+
+    .anchor-link {
+      color: #007bff !important;
+    }
+
+    .anchor-link:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+    .anchor-u-link {
+      cursor: pointer;
+      color: #007bff;
+      text-decoration: underline;
+    }
+  }
+
+  /* Date column width to prevent wrapping */
+  .ant-table-thead > tr > th:nth-child(5),
+  .ant-table-tbody > tr > td:nth-child(5) { /* Seat Date is 5th column */
+    min-width: 125px !important;
+    width: 125px !important;
+    white-space: nowrap;
+  }
+
+  /* Input borders in filter row */
+  .filter-row input,
+  .filter-row .ant-select-selector {
+    border: 1px solid #595959;
+  }
+
+  /* NzSelect styling in filter row - fix grey appearance */
+  .filter-dropdown .ant-select-selector {
+    border: 1px solid #595959 !important;
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Filter dropdown size constraints and font size */
+  .filter-dropdown {
+    height: 35px;
+    margin-top: 7px;
+    line-height: normal;
+    font-size: 14px;
+  }
+
+  /* Target the actual selector element for height and font */
+  .filter-dropdown .ant-select-selector {
+    height: 35px !important;
+    min-height: 35px !important;
+    font-size: 14px !important;
+    line-height: 33px !important;
+  }
+
+  /* Dropdown selection text styling */
+  .filter-dropdown .ant-select-selection-item {
+    font-size: 14px !important;
+    line-height: 33px !important;
+    color: #000 !important;
+  }
+
+  /* Dropdown placeholder text - target the actual rendered class */
+  .filter-dropdown .ant-select-selection-placeholder {
+    font-size: 14px !important;
+    line-height: 33px !important;
+    color: #000 !important;
+  }
+
+  /* Increase filter input heights to match dropdowns */
+  .filter-row input {
+    height: 35px;
+    margin-top: 7px;
+  }
+
+  /* Date picker height matching */
+  .filter-row .ant-picker {
+    height: 35px;
+    margin-top: 7px;
+    border: 1px solid #d9d9d9 !important;
+  }
+
+  /* Date picker input element - fix all internal elements */
+  .filter-row .ant-picker input {
+    height: 33px !important;
+    margin-top: 0 !important;
+    line-height: 33px !important;
+    border: none !important;
+  }
+
+  /* Date picker suffix icon positioning */
+  .filter-row .ant-picker .ant-picker-suffix {
+    line-height: 33px !important;
+  }
+
+  /* Alternate row shading (zebra striping) */
+  .ant-table-tbody > tr:nth-child(even) {
+    background-color: #DEE9F0;
+  }
+
+  .ant-table-tbody > tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+  /* Sort icons - make them darker to match bold text */
+  .ant-table-thead .ant-table-column-sorter .anticon {
+    color: #262626 !important;
+  }
+
+  /* Active sort icon (for sorted columns) */
+  .ant-table-thead .ant-table-column-sorter .anticon.active {
+    color: #ffffff !important;
+  }
+
+  /* Table link styling */
+  .tableLinkClass {
+    color: #007ad9 !important;
+    text-decoration: none;
+  }
+
+  .tableLinkClass:hover {
+    text-decoration: underline;
+    color: #005a9e !important;
+  }
+
+  /* Ensure incident column links are styled properly */
+  incident-column a,
+  esa-paged-grid incident-column a,
+  .ant-table incident-column a {
+    color: #007ad9 !important;
+    text-decoration: none !important;
+  }
+
+  incident-column a:hover,
+  esa-paged-grid incident-column a:hover,
+  .ant-table incident-column a:hover {
+    text-decoration: underline !important;
+    color: #005a9e !important;
+  }
+
+  /* General table link styling for inheritance */
+  table td a, table th a {
+      color: inherit;
+  }
+}

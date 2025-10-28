@@ -1,0 +1,184 @@
+
+<nz-table
+    #nzTable
+    [nzData]="data"
+    [nzFrontPagination]="false"
+    [nzTotal]="totalCount"
+    [nzPageSize]="pageSize"
+    [nzPageIndex]="pageIndex"
+    [nzPageSizeOptions]="pageSizes"
+    [nzShowSizeChanger]="true"
+    [nzShowQuickJumper]="true"
+    [nzLoading]="loading"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    nzBordered
+    nzSize="middle">
+
+    <thead>
+        <!-- HEADER ROW 1: Column Headers with Sorting -->
+        <tr>
+            @for (col of gridColumns; track col.field) {
+                <th [nzColumnKey]="col.dbColumn || col.field"
+                    [nzSortFn]="col.canSort ? true : null"
+                    [nzSortOrder]="getSortOrder(col)"
+                    [nzWidth]="col.width || null">
+
+                    <span>{{col.header}}</span>
+                </th>
+            }
+        </tr>
+
+        <!-- HEADER ROW 2: Filter Controls -->
+        <tr>
+            @for (col of gridColumns; track col.field) {
+                <th class="filter-row">
+
+                    <!-- Date Picker: For date displayType -->
+                    @if (col.displayType === 'date') {
+                        <nz-date-picker
+                            nzPlaceHolder="Select date"
+                            nzAllowClear
+                            nzSize="small"
+                            style="width: 100%;"
+                            [(ngModel)]="dateFilterValues[col.field]"
+                            (ngModelChange)="applyDateFilter(col, $event)">
+                        </nz-date-picker>
+                    }
+
+                    <!-- Dropdown: For columns with dropdownFilterOptions -->
+                    @if (col.dropdownFilterOptions) {
+                        <nz-select
+                            class="filter-dropdown"
+                            style="width: 100%;"
+                            nzPlaceHolder="All"
+                            nzAllowClear
+                            nzSize="small"
+                            [(ngModel)]="dropdownFilterValues[col.field]"
+                            (ngModelChange)="applyDropdownFilter(col, $event)">
+
+                            @for (option of getFilterOptions(col); track option.value) {
+                                <nz-option [nzValue]="option.value">
+                                    {{ option.label || option.value?.toString() || '' }}
+                                </nz-option>
+                            }
+                        </nz-select>
+                    }
+
+                    <!-- Number Input: For number displayType -->
+                    @if (col.displayType === 'number') {
+                        <input
+                            nz-input
+                            class="table-input"
+                            type="number"
+                            nzSize="small"
+                            [placeholder]="'Filter ' + col.header"
+                            [value]="textFilterValues[col.field] || ''"
+                            (input)="onInputChange($event, col)"
+                            (keyup)="onInputKeyUp($event, col)"
+                            (blur)="onInputBlur($event, col)">
+                    }
+
+                    <!-- Text Input: Default for everything else -->
+                    @if (!col.dropdownFilterOptions && col.displayType !== 'number' && col.displayType !== 'date') {
+                        <input
+                            nz-input
+                            class="table-input"
+                            type="text"
+                            nzSize="small"
+                            [placeholder]="'Filter ' + col.header"
+                            [value]="textFilterValues[col.field] || ''"
+                            (input)="onInputChange($event, col)"
+                            (keyup)="onInputKeyUp($event, col)"
+                            (blur)="onInputBlur($event, col)">
+                    }
+                </th>
+            }
+        </tr>
+    </thead>
+
+    <tbody>
+        @for (rowData of data; track $index; let rowIndex = $index) {
+            <tr [style.cursor]="allowRowSelection ? 'pointer' : 'default'"
+                [class.ant-table-row-selected]="allowRowSelection && selectedItem === rowData"
+                [ngClass]="rowData | rowClass:gridColumns"
+                (click)="allowRowSelection ? onRowClick(rowData) : null">
+
+                @for (col of gridColumns; track col.field) {
+                    <td [ngClass]="col.cellClass">
+
+                        @switch (col.displayType) {
+                            <!-- Link display -->
+                            @case ('link') {
+                                @let routerLink = buildRouterLink(rowData, col);
+                                @let queryParams = buildQueryParams(rowData, col);
+                                @if (routerLink) {
+                                    <div [nz-tooltip]="rowData | cellTooltip:col" nzTooltipPlacement="top">
+                                        <a class="table-link"
+                                            [routerLink]="routerLink"
+                                            [queryParams]="queryParams">
+                                            {{ rowData | fieldAccess:col.field }}
+                                        </a>
+                                    </div>
+                                } @else {
+                                    <div [nz-tooltip]="rowData | cellTooltip:col">
+                                        {{ rowData | fieldAccess:col.field }}
+                                    </div>
+                                }
+                            }
+
+                            <!-- Date display -->
+                            @case ('date') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ (rowData | fieldAccess:col.field) | date:(col.displayOption || 'short') }}
+                                </div>
+                            }
+
+                            <!-- Number display -->
+                            @case ('number') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ (rowData | fieldAccess:col.field) | number }}
+                                </div>
+                            }
+
+                            <!-- Checkbox display -->
+                            @case ('checkbox') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    <input type="checkbox" [disabled]="true" [checked]="rowData | fieldAccess:col.field">
+                                </div>
+                            }
+
+                            <!-- Dropdown display -->
+                            @case ('dropdown') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData | fieldAccess:col.field }}
+                                </div>
+                            }
+
+                            <!-- Custom component display -->
+                            @case ('custom') {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    <!-- Custom component would go here -->
+                                    {{ rowData | fieldAccess:col.field }}
+                                </div>
+                            }
+
+                            <!-- Default text display -->
+                            @default {
+                                <div [nz-tooltip]="rowData | cellTooltip:col">
+                                    {{ rowData | fieldAccess:col.field }}
+                                </div>
+                            }
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</nz-table>
+
+<!-- Summary section -->
+<div class="grid-footer">
+    <div class="record-count">
+        <strong>{{ displayTotalCountText }}</strong>
+    </div>
+</div>
