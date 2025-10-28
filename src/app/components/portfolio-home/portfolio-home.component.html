@@ -104,12 +104,12 @@
   }
 
   .project-image {
-    height: 180px;
+    height: 120px;
     background: linear-gradient(45deg, #f0f2f5, #e6f7ff);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 36px;
     color: var(--primary-color);
   }
 
@@ -273,12 +273,6 @@
               </a>
             </ng-template>
 
-            <nz-tag [nzColor]="project.status.includes('Render') ? 'orange' : project.status === 'Live Demo' ? 'green' : 'blue'"
-                    class="status-tag"
-                    nz-tooltip
-                    [nzTooltipTitle]="project.statusNote">
-              {{ project.status }}
-            </nz-tag>
 
             <nz-card-meta
               [nzTitle]="project.title"

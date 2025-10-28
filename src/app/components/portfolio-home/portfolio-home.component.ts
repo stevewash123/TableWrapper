@@ -58,7 +58,7 @@ export class PortfolioHomeComponent {
       image: '/assets/recipefinder-preview.png'
     },
     {
-      title: 'Angular Component Demo',
+      title: 'Table Wrapper',
       description: 'Declarative table wrapper component demonstrating enterprise-grade data grid configuration.',
       technologies: ['Angular', 'TypeScript', 'NgZorro', 'PrimeNg', 'Declarative Configuration'],
       liveDemo: '/table-wrapper',
