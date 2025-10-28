@@ -18,6 +18,48 @@
   line-height: 1.6;
 }
 
+/* Navigation Header */
+.nav-header {
+  background: var(--gray-900);
+  color: white;
+  padding: 16px 0;
+  margin: -24px -24px 24px -24px;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.nav-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 .main {
   min-height: 100vh;
   background: var(--gray-50);
